@@ -38,6 +38,7 @@ export default class Home extends React.Component {
   }
 
   componentDidMount() {
+    DataActions.GetData();
     // PlantActions.getPlants();
   }
 

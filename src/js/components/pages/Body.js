@@ -6,6 +6,7 @@ import DataStore from "../../stores/DataStore";
 import { Button } from 'react-bootstrap';
 import AnimateHeight from 'react-animate-height';
 import MorphTest from '../../animtions/morphTest.js'
+import Snap from 'imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js';
 
 export default class Home extends React.Component {
   constructor(props) {
@@ -21,25 +22,25 @@ export default class Home extends React.Component {
     this.state = {
       isLoading: true,
       loadingError: false,
-      data: []
+      data: [],
+      occupations: []
     }
   }
 
   componentWillMount() {
-    // PlantStore.on("plant_service_start", this.serviceStart);
-    // PlantStore.on("plant_serice_error", this.serviceError);
-    // PlantStore.on("plants_loaded", this.refreshPlants);
+    DataStore.on("data_service_start", this.serviceStart);
+    DataStore.on("data_serice_error", this.serviceError);
+    DataStore.on("data_loaded", this.refreshData);
   }
 
   componentWillUnmount() {
-    // PlantStore.removeListener("plant_service_start", this.serviceStart);
-    // PlantStore.removeListener("plant_serice_error", this.serviceError);
-    // PlantStore.removeListener("plants_loaded", this.refreshPlants);
+    DataStore.removeListener("data_service_start", this.serviceStart);
+    DataStore.removeListener("data_serice_error", this.serviceError);
+    DataStore.removeListener("data_loaded", this.refreshData);
   }
 
   componentDidMount() {
     DataActions.GetData();
-    // PlantActions.getPlants();
   }
 
   serviceStart() {
@@ -52,10 +53,36 @@ export default class Home extends React.Component {
   }
 
   refreshData() {
-    this.setState({});
+    this.setState({
+      data: DataStore.getData(),
+      isLoading: false,
+      loadingError: false
+    });
+
+    // console.log("REP: ", DataStore.getPartyData(this.state.data, "REP"));
+    // console.log("DEM: ", DataStore.getPartyData(this.state.data, "DEM"));
+    console.log("OCCUPATIONS: ", DataStore.getUniqueOccupations());
+    this.setState({
+      occupations: DataStore.getUniqueOccupations(this.state.data)
+    });
+  }
+
+  drawBubbles(s, occupations) {
+    console.log(occupations.length);
+    for (var i = 0; i < occupations.length; i++) {
+      let c = s.circle(this.getRandom(0, 1000), this.getRandom(0, 1000), (occupations[i].count * .025));
+    }
+  }
+
+  getRandom(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   render() {
+    const svg = document.getElementById("svgID");
+    const s = Snap(svg);
+    // this.drawBubbles(s, this.state.occupations);
+
     return (
       <div>
         <div class="main-wrap">
@@ -63,8 +90,11 @@ export default class Home extends React.Component {
             this.state.isLoading ?
               <div>Loading Widget</div>
             :
+
               <div>
-                Loaded
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.11 281.11" id="svgID" class="svg-canvas" width="100%">
+                </svg>
+
               </div>
           }
         </div>
